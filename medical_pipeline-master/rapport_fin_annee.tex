@@ -1,0 +1,278 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------- Encodage & langue ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% ---------- Mise en page ----------
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+
+% ---------- Couleurs & graphismes ----------
+\usepackage{xcolor}
+\definecolor{primary}{HTML}{1F6FEB}
+\definecolor{dark}{HTML}{0D1117}
+\definecolor{lightgray}{HTML}{F0F3F7}
+\definecolor{success}{HTML}{2EA043}
+\definecolor{warning}{HTML}{D29922}
+
+% ---------- Tableaux ----------
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\renewcommand{\arraystretch}{1.3}
+
+% ---------- Titres de sections ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\color{primary}\Large\bfseries}{\thesection.}{0.6em}{}
+\titleformat{\subsection}
+  {\color{dark}\large\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.7em}
+
+% ---------- En-têtes / pieds de page ----------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\textcolor{primary}{Medical Pipeline}}
+\rhead{\small Rapport de fin d'année}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------- Liens ----------
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=primary,
+  urlcolor=primary,
+  pdftitle={Rapport de fin d'annee - Medical Pipeline},
+  pdfauthor={ElKarizma}
+}
+
+% ---------- Icônes texte ----------
+\newcommand{\ok}{\textcolor{success}{\textbf{OK}}}
+\newcommand{\partiel}{\textcolor{warning}{\textbf{Partiel}}}
+
+\begin{document}
+
+% ================= PAGE DE TITRE =================
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\color{primary}\rule{\linewidth}{2pt}}\\[0.6cm]
+{\Huge\bfseries Rapport de Fin d'Année\par}
+\vspace{0.5cm}
+{\LARGE Projet \textit{Medical Pipeline}\par}
+\vspace{0.3cm}
+{\large Diagnostic IA à partir des symptômes\\ Scraping NHS \& Machine Learning\par}
+{\color{primary}\rule{\linewidth}{2pt}}\\[1.5cm]
+
+\begin{tabular}{rl}
+\textbf{Projet} & Medical Pipeline -- Diagnostic IA NHS \\[4pt]
+\textbf{Auteur} & ElKarizma \\[4pt]
+\textbf{Période} & Année 2025 \\[4pt]
+\textbf{Date du rapport} & 10 juin 2026 \\[4pt]
+\textbf{Dépôt} & \texttt{ElKarizma/medical\_pipeline-master} \\[4pt]
+\textbf{Stack} & Python, Streamlit, scikit-learn, BeautifulSoup, DVC \\
+\end{tabular}
+
+\vfill
+{\small\itshape Outil à finalité éducative -- ne se substitue pas à un avis médical professionnel.\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ================= 1. RESUME =================
+\section{Résumé exécutif}
+
+Le projet \textbf{Medical Pipeline} est une application complète de \textbf{science des données médicales} qui couvre toute la chaîne de valeur d'un projet de Machine Learning~: de la \textbf{collecte automatisée de données} (web scraping du site officiel du NHS) jusqu'à un \textbf{outil de diagnostic interactif} présenté dans une interface web moderne.
+
+À partir d'une liste de symptômes cochés par l'utilisateur, l'application prédit si un patient est \textbf{«~Malade~»} ou \textbf{«~Sain~»}, estime une \textbf{probabilité} et un \textbf{niveau de confiance}, puis identifie la \textbf{maladie la plus probable} par similarité symptomatique.
+
+Le projet démontre la maîtrise d'un \textbf{pipeline de données de bout en bout}~:
+\begin{center}
+\textbf{Scraping $\rightarrow$ Nettoyage $\rightarrow$ Contrôle qualité $\rightarrow$ Entraînement $\rightarrow$ Prédiction $\rightarrow$ Interface.}
+\end{center}
+
+\begin{quote}
+\textcolor{warning}{\textbf{Note importante~:}} l'outil est à vocation \textbf{éducative uniquement} et ne remplace en aucun cas un avis médical professionnel. Cet avertissement est intégré directement dans l'interface.
+\end{quote}
+
+% ================= 2. OBJECTIFS =================
+\section{Objectifs du projet}
+
+\begin{longtable}{@{}p{0.5cm} p{11.5cm} p{2cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Objectif} & \textbf{Statut} \\
+\midrule
+\endhead
+1 & Collecter automatiquement des données de symptômes depuis une source fiable (NHS) & \ok \\
+2 & Construire un dataset structuré et exploitable (X = symptômes, y = label) & \ok \\
+3 & Mettre en place un pipeline de nettoyage et de contrôle qualité & \ok \\
+4 & Entraîner et comparer plusieurs modèles de classification & \ok \\
+5 & Identifier la maladie probable au-delà du diagnostic binaire & \ok \\
+6 & Proposer une interface utilisateur claire et accessible & \ok \\
+7 & Assurer la reproductibilité et le versionnement (Git + DVC) & \partiel \\
+\bottomrule
+\end{longtable}
+
+% ================= 3. ARCHITECTURE =================
+\section{Architecture technique}
+
+\subsection{Vue d'ensemble du pipeline}
+
+\begin{center}
+\fbox{\texttt{scraper\_nhs}} $\rightarrow$
+\fbox{\texttt{cleaning}} $\rightarrow$
+\fbox{\texttt{quality\_check}} $\rightarrow$
+\fbox{\texttt{model}} $\rightarrow$
+\fbox{\texttt{app}}
+\end{center}
+
+\begin{center}
+\small (collecte) \quad (nettoyage) \quad (qualité) \quad (ML / IA) \quad (interface)\\
+$\downarrow$ \texttt{data/raw/*.csv} \hspace{4cm} $\downarrow$ \texttt{models/*.pkl}
+\end{center}
+
+\subsection{Description des modules}
+
+\begin{longtable}{@{}p{3cm} p{3cm} p{8cm}@{}}
+\toprule
+\textbf{Fichier} & \textbf{Rôle} & \textbf{Points clés} \\
+\midrule
+\endhead
+\texttt{scraper\_nhs.py} & Collecte & Scrape les pages du NHS, détecte \textbf{50 symptômes cibles} via un dictionnaire de mots-clés, génère des profils «~sains~» synthétiques, exporte un CSV. \\
+\texttt{cleaning.py} & Nettoyage & Suppression des doublons, gestion des valeurs manquantes (remplissage à 0), correction des types. \\
+\texttt{quality\_check.py} & Qualité & 4 contrôles automatiques (manquants, doublons, équilibre des classes, complétude) avec un \textbf{score sur 100}. \\
+\texttt{model.py} & ML / IA & Entraîne un \textbf{Random Forest} et une \textbf{Régression Logistique}, identifie la maladie par \textbf{similarité de Jaccard}. \\
+\texttt{app.py} & Interface & Application \textbf{Streamlit} en 3 onglets, design sombre personnalisé en CSS. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Stack technologique}
+\begin{itemize}
+  \item \textbf{Langage}~: Python
+  \item \textbf{Collecte}~: \texttt{requests}, \texttt{BeautifulSoup} (bs4)
+  \item \textbf{Données}~: \texttt{pandas}, \texttt{numpy}
+  \item \textbf{Machine Learning}~: \texttt{scikit-learn} (RandomForest, LogisticRegression, StandardScaler)
+  \item \textbf{Interface}~: \texttt{Streamlit}
+  \item \textbf{Sérialisation}~: \texttt{pickle}
+  \item \textbf{Versionnement}~: \texttt{Git} + \texttt{DVC}
+\end{itemize}
+
+% ================= 4. FONCTIONNALITES =================
+\section{Fonctionnalités réalisées}
+
+\subsection{Collecte de données (Scraping NHS)}
+\begin{itemize}
+  \item Récupération automatique de la liste des maladies depuis \url{https://www.nhs.uk/conditions/}.
+  \item Détection de \textbf{50 symptômes} par correspondance de mots-clés (ex. \textit{fever} $\leftrightarrow$ «~fever, high temperature, pyrexia~»).
+  \item Extraction ciblée des sections «~Symptoms~» des pages.
+  \item Génération de \textbf{profils sains synthétiques} pour équilibrer le dataset.
+  \item Paramétrage du nombre de maladies (10 à 100) et export CSV automatique.
+\end{itemize}
+
+\subsection{Pipeline de traitement}
+\begin{itemize}
+  \item Nettoyage des doublons, valeurs manquantes et types.
+  \item Contrôle qualité automatisé~: manquants $<$ 15\,\%, absence de doublons, équilibre malades/sains (30--70\,\%), au moins 1 symptôme par ligne.
+\end{itemize}
+
+\subsection{Modélisation et diagnostic}
+\begin{itemize}
+  \item Entraînement comparé de \textbf{2 modèles} avec \texttt{class\_weight="balanced"}.
+  \item Séparation train/test (80/20) stratifiée.
+  \item Prédiction avec \textbf{probabilité} et \textbf{niveau de confiance} (Haute / Moyenne / Faible).
+  \item \textbf{Identification de la maladie probable} via similarité de Jaccard.
+\end{itemize}
+
+\subsection{Interface utilisateur}
+\begin{itemize}
+  \item Application web en \textbf{3 onglets} guidant l'utilisateur pas à pas.
+  \item Visualisations~: métriques, top 10 des symptômes, cartes de résultats colorées.
+  \item Design sombre soigné et avertissement médical.
+\end{itemize}
+
+% ================= 5. BILAN =================
+\section{Bilan technique}
+
+\subsection{Points forts}
+\begin{itemize}
+  \item \textbf{Pipeline complet et cohérent} couvrant tout le cycle de vie d'un projet ML.
+  \item \textbf{Séparation claire des responsabilités} (un module = une étape).
+  \item \textbf{Code lisible et documenté} (docstrings, nommage explicite).
+  \item \textbf{Bonnes pratiques ML}~: stratification, gestion du déséquilibre, normalisation.
+  \item \textbf{Valeur ajoutée} grâce à l'identification de maladie.
+  \item \textbf{Interface professionnelle} et expérience utilisateur soignée.
+\end{itemize}
+
+\subsection{Limites et axes d'amélioration}
+
+\begin{longtable}{@{}p{7cm} p{8cm}@{}}
+\toprule
+\textbf{Limite} & \textbf{Recommandation} \\
+\midrule
+\endhead
+Absence de \texttt{requirements.txt} & Figer les dépendances pour la reproductibilité. \\
+Pas de tests automatisés & Ajouter des tests unitaires (\texttt{pytest}). \\
+Données «~saines~» synthétiques & Utiliser des données réelles ou une génération plus réaliste. \\
+Détection par mots-clés simple & Explorer le NLP (embeddings) pour l'extraction. \\
+Pas de README & Rédiger un \texttt{README.md} (installation, lancement). \\
+Évaluation limitée à l'\textit{accuracy} & Ajouter précision, rappel, F1-score, matrice de confusion. \\
+DVC non finalisé & Compléter le suivi des datasets/modèles. \\
+Pas de CI/CD & Ajouter un workflow GitHub Actions (lint + tests). \\
+\bottomrule
+\end{longtable}
+
+% ================= 6. INDICATEURS =================
+\section{Indicateurs du projet}
+
+\begin{longtable}{@{}p{9cm} p{5cm}@{}}
+\toprule
+\textbf{Indicateur} & \textbf{Valeur} \\
+\midrule
+\endhead
+Nombre de modules Python & 5 \\
+Symptômes pris en charge & 50 \\
+Modèles de ML & 2 (Random Forest, Régression Logistique) \\
+Modèles sérialisés (\texttt{models/}) & 5 fichiers \texttt{.pkl} \\
+Contrôles qualité automatiques & 4 \\
+Onglets de l'interface & 3 \\
+Source de données & NHS (officielle) \\
+Commits Git & 1 («~first commit~») \\
+\bottomrule
+\end{longtable}
+
+% ================= 7. PERSPECTIVES =================
+\section{Perspectives pour l'année prochaine}
+
+\begin{enumerate}
+  \item \textbf{Fiabiliser la base}~: \texttt{requirements.txt}, \texttt{README.md}, tests unitaires, CI/CD.
+  \item \textbf{Enrichir les données}~: plus de maladies, données saines réelles, mise à jour automatisée.
+  \item \textbf{Améliorer les modèles}~: métriques avancées, validation croisée, XGBoost, etc.
+  \item \textbf{Renforcer l'extraction de symptômes} par des techniques de NLP.
+  \item \textbf{Déploiement}~: héberger l'application (Streamlit Cloud, Docker).
+  \item \textbf{Finaliser le versionnement} des données et modèles avec DVC.
+\end{enumerate}
+
+% ================= 8. CONCLUSION =================
+\section{Conclusion}
+
+Le projet \textbf{Medical Pipeline} constitue une \textbf{réalisation solide et aboutie} illustrant la mise en œuvre complète d'un projet de data science, depuis la collecte des données jusqu'à la livraison d'un produit utilisable. Il combine \textbf{compétences techniques} (scraping, ingénierie de données, machine learning) et \textbf{souci de l'expérience utilisateur}.
+
+Les bases posées cette année sont saines et bien structurées. Les principaux chantiers de l'année à venir concernent la \textbf{professionnalisation} (tests, documentation, déploiement) et l'\textbf{amélioration de la qualité des données et des modèles}. Le projet est ainsi très bien positionné pour évoluer vers une version plus robuste et déployable.
+
+\vspace{1.5cm}
+\hrule
+\vspace{0.3cm}
+{\small\itshape Rapport généré le 10 juin 2026 -- Projet Medical Pipeline (ElKarizma). Outil à finalité éducative -- ne se substitue pas à un avis médical professionnel.}
+
+\end{document}
